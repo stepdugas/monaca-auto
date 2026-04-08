@@ -28,7 +28,7 @@
               v-model="form.username"
               class="w-full px-4 py-3 bg-dark-600 border border-white/10 rounded-xl text-white placeholder-white/30
                      focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition text-sm"
-              placeholder="admin"
+              placeholder="Enter username"
               autocomplete="username"
               required
             />
