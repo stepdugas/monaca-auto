@@ -49,7 +49,17 @@
           </div>
           <div>
             <label class="form-label">Estimated Value ($)</label>
-            <input v-model.number="form.kbbValue" type="number" class="form-input" placeholder="Optional — shown as comparison on listing" min="0" />
+            <div class="flex gap-2">
+              <input v-model.number="form.kbbValue" type="number" class="form-input flex-1" placeholder="Optional — shown as comparison on listing" min="0" />
+              <a
+                v-if="form.year && form.make && form.model"
+                :href="`https://www.nadaguides.com/Cars/${form.year}/${encodeURIComponent(form.make)}/${encodeURIComponent(form.model)}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg border border-gray-300 transition whitespace-nowrap flex items-center"
+                title="Look up NADA value"
+              >NADA Lookup</a>
+            </div>
           </div>
           <div>
             <label class="form-label">Mileage</label>

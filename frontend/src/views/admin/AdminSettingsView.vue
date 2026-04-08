@@ -372,6 +372,25 @@
         </div>
       </section>
 
+      <!-- INTEGRATIONS -->
+      <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-base font-semibold text-gray-900 mb-1 pb-3 border-b border-gray-100">
+          Integrations
+        </h2>
+        <p class="text-sm text-gray-500 mb-6 mt-3">
+          Connect third-party services to your listings.
+        </p>
+        <div class="space-y-4">
+          <label class="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition">
+            <div>
+              <p class="text-sm font-semibold text-gray-800">Show CARFAX Report Links</p>
+              <p class="text-xs text-gray-500 mt-0.5">Displays a "View CARFAX Report" button on each vehicle listing page</p>
+            </div>
+            <input v-model="form.carfax_enabled" type="checkbox" class="w-5 h-5 accent-blue-600 cursor-pointer flex-shrink-0 ml-4" />
+          </label>
+        </div>
+      </section>
+
       <!-- PASSWORD MANAGEMENT -->
       <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 class="text-base font-semibold text-gray-900 mb-1 pb-3 border-b border-gray-100">
@@ -517,6 +536,8 @@ const form = reactive({
   page_staff: false,
   page_financing: false,
   page_schedule_service: false,
+  // integrations
+  carfax_enabled: false,
   // hours
   hours_monday_open: '09:00',    hours_monday_close: '18:00',    hours_monday_closed: false,
   hours_tuesday_open: '09:00',   hours_tuesday_close: '18:00',   hours_tuesday_closed: false,
@@ -552,6 +573,7 @@ onMounted(async () => {
     if (s.page_staff            !== undefined) form.page_staff            = s.page_staff            === 'true'
     if (s.page_financing        !== undefined) form.page_financing        = s.page_financing        === 'true'
     if (s.page_schedule_service !== undefined) form.page_schedule_service = s.page_schedule_service === 'true'
+    if (s.carfax_enabled        !== undefined) form.carfax_enabled        = s.carfax_enabled        === 'true'
 
     // Populate hours
     days.forEach(day => {
@@ -592,6 +614,7 @@ async function save() {
     updates.page_staff            = String(form.page_staff)
     updates.page_financing        = String(form.page_financing)
     updates.page_schedule_service = String(form.page_schedule_service)
+    updates.carfax_enabled        = String(form.carfax_enabled)
 
     // Build hours strings and save raw fields
     days.forEach(day => {

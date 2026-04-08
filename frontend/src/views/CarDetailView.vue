@@ -98,6 +98,24 @@
             </div>
           </div>
 
+          <!-- CarFax Report Link -->
+          <div v-if="siteSettings.carfax_enabled === 'true' && car.vin" data-aos="fade-up">
+            <a
+              :href="`https://www.carfax.com/VehicleHistory/p/Report.cfx?partner=DLR_3&vin=${car.vin}`"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-2xl p-4 hover:bg-blue-100 transition"
+            >
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-blue-800">View CARFAX Report</p>
+                <p class="text-xs text-blue-600 mt-0.5">Check full vehicle history for VIN {{ car.vin }}</p>
+              </div>
+              <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+
           <!-- Specs table -->
           <div data-aos="fade-up">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Vehicle Details</h2>
