@@ -381,6 +381,23 @@
           Connect third-party services to your listings.
         </p>
         <div class="space-y-4">
+          <!-- Facebook Marketplace Feed -->
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <p class="text-sm font-semibold text-gray-800">Facebook Marketplace Feed</p>
+            <p class="text-xs text-gray-500 mt-0.5 mb-3">Your available inventory auto-syncs to Facebook Marketplace every 24 hours. Copy this URL and paste it into Facebook Commerce Manager → Catalogs → Add items → Data feed.</p>
+            <div class="flex gap-2">
+              <input
+                :value="`${API_BASE_URL}/api/feeds/facebook-marketplace`"
+                readonly
+                class="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-700 font-mono"
+              />
+              <button
+                @click="copyFeedUrl"
+                class="px-3 py-2 bg-gray-800 text-white text-xs font-semibold rounded-lg hover:bg-gray-900 transition whitespace-nowrap"
+              >{{ feedCopied ? 'Copied!' : 'Copy URL' }}</button>
+            </div>
+          </div>
+
           <label class="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition">
             <div>
               <p class="text-sm font-semibold text-gray-800">Show CARFAX Report Links</p>
@@ -481,13 +498,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { adminGetSettings, adminUpdateSettings, adminChangePassword, adminChangeManagerPassword } from '../../api/index'
 import { HERO_PRESETS, fetchSiteSettings } from '../../composables/useSiteSettings'
-import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../../config'
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET, API_BASE_URL } from '../../config'
 
 const loading       = ref(true)
 const saving        = ref(false)
+const feedCopied    = ref(false)
+
+function copyFeedUrl() {
+  navigator.clipboard.writeText(`${API_BASE_URL}/api/feeds/facebook-marketplace`)
+  feedCopied.value = true
+  setTimeout(() => { feedCopied.value = false }, 2000)
+}
 const customHeroUrl = ref('')
 const successMsg = ref('')
 const errorMsg   = ref('')
