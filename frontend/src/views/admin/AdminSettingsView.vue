@@ -2,13 +2,13 @@
   <div class="max-w-3xl mx-auto">
 
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Site Settings</h1>
       <button
         v-if="activeTab !== 'password'"
         @click="save"
         :disabled="saving"
-        class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700
+        class="self-start sm:self-auto px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700
                disabled:opacity-50 disabled:cursor-not-allowed transition"
       >{{ saving ? 'Saving...' : 'Save Changes' }}</button>
     </div>
@@ -327,9 +327,18 @@
             </div>
             <input v-model="form.page_staff" type="checkbox" class="w-5 h-5 accent-blue-600 cursor-pointer flex-shrink-0 ml-4" />
           </div>
-          <div class="p-4 bg-blue-50 rounded-lg text-sm text-blue-800">
-            To add, edit, or remove staff members, go to the <strong>Staff</strong> tab in the left navigation.
-          </div>
+          <RouterLink
+            to="/admin/staff"
+            class="flex items-center justify-between p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition group"
+          >
+            <div class="text-sm text-blue-800">
+              <p class="font-semibold">Manage Staff Members</p>
+              <p class="mt-0.5 text-blue-600">Add, edit, or remove team profiles →</p>
+            </div>
+            <svg class="w-5 h-5 text-blue-400 group-hover:text-blue-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </RouterLink>
         </section>
       </div>
 
@@ -340,14 +349,16 @@
           <div class="space-y-3">
             <div
               v-for="day in days" :key="day.key"
-              class="flex flex-wrap items-center gap-3 p-3 bg-gray-50 rounded-lg"
+              class="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 bg-gray-50 rounded-lg"
               :class="{ 'opacity-50': form[day.closedKey] }"
             >
-              <span class="w-24 text-sm font-semibold text-gray-700">{{ day.label }}</span>
-              <input v-model="form[day.openKey]" type="time" class="field w-32" :disabled="form[day.closedKey]" />
-              <span class="text-gray-400 text-sm">to</span>
-              <input v-model="form[day.closeKey]" type="time" class="field w-32" :disabled="form[day.closedKey]" />
-              <label class="flex items-center gap-2 ml-auto text-sm text-gray-600 cursor-pointer">
+              <span class="w-24 text-sm font-semibold text-gray-700 flex-shrink-0">{{ day.label }}</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <input v-model="form[day.openKey]" type="time" class="field w-32" :disabled="form[day.closedKey]" />
+                <span class="text-gray-400 text-sm">to</span>
+                <input v-model="form[day.closeKey]" type="time" class="field w-32" :disabled="form[day.closedKey]" />
+              </div>
+              <label class="flex items-center gap-2 ml-auto text-sm text-gray-600 cursor-pointer flex-shrink-0">
                 <input v-model="form[day.closedKey]" type="checkbox" class="w-4 h-4 accent-blue-600 cursor-pointer" />
                 Closed
               </label>
@@ -449,6 +460,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import { adminGetSettings, adminUpdateSettings, adminChangePassword, adminChangeManagerPassword, getReviews, adminCreateReview, adminDeleteReview } from '../../api/index'
 import { HERO_PRESETS, fetchSiteSettings } from '../../composables/useSiteSettings'
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET, API_BASE_URL } from '../../config'
