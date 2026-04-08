@@ -36,11 +36,11 @@ public class EmailService {
     /**
      * Send a simple contact form email (for vehicle inquiries).
      */
-    public void sendContactFormEmail(String name, String email, String phone, String message, String vehicleInfo) {
+    public void sendContactFormEmail(String toEmail, String name, String email, String phone, String message, String vehicleInfo) {
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(fromEmail);
-            mailMessage.setTo(adminEmail);
+            mailMessage.setTo(toEmail);
             mailMessage.setReplyTo(email);
             mailMessage.setSubject("📧 New Vehicle Inquiry: " + vehicleInfo);
 

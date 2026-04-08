@@ -56,7 +56,10 @@ public class ContactController {
     public ResponseEntity<ContactSubmission> submit(@Valid @RequestBody ContactRequest req) {
         ContactSubmission saved = contactService.save(req);
         String vehicleInfo = saved.getCarId() != null ? "Vehicle ID #" + saved.getCarId() : "General Inquiry";
-        emailService.sendContactFormEmail(saved.getName(), saved.getEmail(), saved.getPhone(), saved.getMessage(), vehicleInfo);
+        String notificationEmail = configService.get("notification_email");
+        if (notificationEmail != null && !notificationEmail.isBlank()) {
+            emailService.sendContactFormEmail(notificationEmail, saved.getName(), saved.getEmail(), saved.getPhone(), saved.getMessage(), vehicleInfo);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
