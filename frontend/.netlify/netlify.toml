@@ -1,0 +1,43 @@
+redirectsOrigin = "config"
+plugins = []
+functionsDirectory = "C:\\Users\\Dugas\\Desktop\\dealership-template\\frontend\\netlify\\functions"
+functionsDirectoryOrigin = "config"
+headers = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "C:\\Users\\Dugas\\Desktop\\dealership-template\\frontend\\frontend\\dist"
+publishOrigin = "config"
+commandOrigin = "config"
+base = "C:\\Users\\Dugas\\Desktop\\dealership-template\\frontend"
+command = "cd frontend && npm install && npm run build"
+functions = "C:\\Users\\Dugas\\Desktop\\dealership-template\\frontend\\netlify\\functions"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

@@ -1,0 +1,36 @@
+You are implementing the following features for the dealership template:
+
+1. **Financing Tab** - Create a new page at /financing (Vue component + route) that acts as a customizable template for dealerships. Include:
+   - Placeholder sections for lenders/financing partners
+   - Rate calculator form
+   - Loan terms explanations
+   - Application links sections
+   - Make it fully customizable with editable text fields
+
+2. **Facebook Marketplace Integration** - Create a backend endpoint that generates an XML feed:
+   - Endpoint: POST /api/facebook-feed or GET /api/facebook/products.xml
+   - Include all vehicles with: title, description, price, image URLs, condition, availability
+   - Proper XML formatting for Facebook's requirements
+   - Test with a sample vehicle
+
+3. **Manager Login System** - Separate authentication tier from admin:
+   - New role: MANAGER (in addition to existing ADMIN and USER)
+   - Manager can: upload/edit/delete vehicles, update store hours, update contact info, view contact submissions
+   - Manager CANNOT: access admin settings, system config, or user management
+   - Create ManagerController and ManagerService
+   - Add manager-specific endpoints for inventory and store management
+   - Create manager login credentials for testing (username: manager, password: manager123)
+
+4. **Prepare for Railway Deployment**:
+   - Ensure all environment variables are set up (.env file)
+   - Verify database migrations are in place
+   - Check that application.properties uses environment variables
+   - Create/update deployment documentation
+
+Start by exploring the project structure, then implement each feature systematically. Make sure to:
+- Follow the existing code patterns (Spring Boot 3, Vue 3)
+- Add proper error handling
+- Test each feature as you build it
+- Commit changes with descriptive messages
+
+When completely done, run: openclaw system event --text "Done: Dealership template features complete" --mode now

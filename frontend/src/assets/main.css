@@ -1,0 +1,85 @@
+/* Tailwind base layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Custom base styles ─────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-gray-900 font-sans antialiased;
+  }
+
+  /* Remove default list styling inside .prose-reset */
+  .prose-reset ul,
+  .prose-reset ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+/* ── Reusable component classes ─────────────────────────── */
+@layer components {
+  /* Primary CTA button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-primary-500 hover:bg-primary-600 active:bg-primary-700
+           text-white font-semibold
+           px-6 py-3 rounded-lg
+           transition-colors duration-200
+           focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2;
+  }
+
+  /* Ghost / outline button */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2
+           border-2 border-primary-500 text-primary-500
+           hover:bg-primary-500 hover:text-white
+           font-semibold
+           px-6 py-3 rounded-lg
+           transition-colors duration-200
+           focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2;
+  }
+
+  /* Card container */
+  .card {
+    @apply bg-white rounded-xl shadow-md overflow-hidden
+           hover:shadow-xl transition-shadow duration-300;
+  }
+
+  /* Section heading */
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-gray-900 leading-tight;
+  }
+
+  /* Subtle section subtitle */
+  .section-subtitle {
+    @apply text-lg text-gray-500 mt-3 max-w-2xl;
+  }
+
+  /* Form input */
+  .form-input {
+    @apply w-full border border-gray-300 rounded-lg px-4 py-3
+           text-gray-900 placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent
+           transition duration-150;
+  }
+
+  /* Form label */
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+}
+
+/* ── AOS overrides ──────────────────────────────────────── */
+/* Prevent content flash before AOS initialises */
+[data-aos] {
+  pointer-events: none;
+}
+[data-aos].aos-animate {
+  pointer-events: auto;
+}
