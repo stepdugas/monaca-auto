@@ -1,7 +1,3 @@
-<!--
-  TestimonialsSection — customer review cards.
-  [TESTIMONIALS] — replace with real reviews per client.
--->
 <template>
   <section class="py-20 bg-dark-800">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,8 +11,8 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div
-          v-for="(t, i) in testimonials"
-          :key="t.name"
+          v-for="(t, i) in reviews"
+          :key="t.id"
           class="bg-dark-700 rounded-2xl p-8 flex flex-col gap-5 border border-white/5
                  hover:border-primary-500/30 transition-colors duration-300"
           data-aos="fade-up"
@@ -43,13 +39,12 @@
 
           <!-- Reviewer -->
           <div class="flex items-center gap-3 border-t border-white/10 pt-5">
-            <!-- Avatar circle with initials -->
             <div class="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0">
-              <span class="text-primary-400 font-bold text-sm">{{ initials(t.name) }}</span>
+              <span class="text-primary-400 font-bold text-sm">{{ initials(t.reviewerName) }}</span>
             </div>
             <div>
-              <p class="text-white font-semibold text-sm">{{ t.name }}</p>
-              <p class="text-gray-500 text-xs">{{ t.vehicle }}</p>
+              <p class="text-white font-semibold text-sm">{{ t.reviewerName }}</p>
+              <p v-if="t.vehiclePurchased" class="text-gray-500 text-xs">{{ t.vehiclePurchased }}</p>
             </div>
           </div>
         </div>
@@ -59,30 +54,12 @@
 </template>
 
 <script setup>
-// [TESTIMONIALS] — replace with real customer reviews
-const testimonials = [
-  {
-    name: '[CUSTOMER_NAME_1]',
-    vehicle: '[VEHICLE_PURCHASED_1]',
-    rating: 5,
-    body: '[TESTIMONIAL_BODY_1] — e.g. "Absolutely the best car-buying experience I have ever had. The team was honest, helpful, and made the whole process effortless."',
-  },
-  {
-    name: '[CUSTOMER_NAME_2]',
-    vehicle: '[VEHICLE_PURCHASED_2]',
-    rating: 5,
-    body: '[TESTIMONIAL_BODY_2] — e.g. "I was nervous about financing but they found me a great rate the same day. Drove off the lot in my dream car!"',
-  },
-  {
-    name: '[CUSTOMER_NAME_3]',
-    vehicle: '[VEHICLE_PURCHASED_3]',
-    rating: 5,
-    body: '[TESTIMONIAL_BODY_3] — e.g. "No pressure, no gimmicks. Just straightforward service. I have already recommended them to three friends."',
-  },
-]
+defineProps({
+  reviews: { type: Array, default: () => [] }
+})
 
 function initials(name) {
-  if (!name || name.startsWith('[')) return '?'
+  if (!name) return '?'
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 }
 </script>

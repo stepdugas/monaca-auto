@@ -138,6 +138,17 @@ export const adminChangeManagerPassword = (newPassword) =>
 /** Fetch all contact submissions (admin only). */
 export const getContactSubmissions = () => api.get('/api/admin/contacts')
 
+// ── Reviews ─────────────────────────────────────────────────────────────────
+
+/** Fetch all reviews (public). */
+export const getReviews = () => api.get('/api/public/reviews')
+
+/** Admin: add a review. */
+export const adminCreateReview = (review) => api.post('/api/admin/reviews', review)
+
+/** Admin: delete a review by id. */
+export const adminDeleteReview = (id) => api.delete(`/api/admin/reviews/${id}`)
+
 // ── Manager auth + endpoints ─────────────────────────────────────────────
 
 /** Manager login — returns a JWT with MANAGER role. */

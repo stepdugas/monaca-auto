@@ -57,6 +57,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,  "/api/public/settings").permitAll()
                 // Public staff directory
                 .requestMatchers(HttpMethod.GET,  "/api/public/staff").permitAll()
+                // Public reviews
+                .requestMatchers(HttpMethod.GET,  "/api/public/reviews").permitAll()
                 // Public financing application form
                 .requestMatchers(HttpMethod.POST, "/api/financing-application").permitAll()
                 // Public service appointment request
