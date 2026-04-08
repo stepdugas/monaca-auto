@@ -40,11 +40,11 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
-              <input v-model="form.business_name" type="text" class="field" placeholder="e.g. Monaca Auto Sales" />
+              <input v-model="form.business_name" type="text" class="field" placeholder="Your dealership name" />
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
-              <input v-model="form.tagline" type="text" class="field" placeholder="e.g. Quality Cars, Honest Deals" />
+              <input v-model="form.tagline" type="text" class="field" placeholder="Your dealership's slogan or tagline" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
@@ -60,7 +60,7 @@
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">City, State ZIP</label>
-              <input v-model="form.city_state_zip" type="text" class="field" placeholder="Monaca, PA 15061" />
+              <input v-model="form.city_state_zip" type="text" class="field" placeholder="City, State ZIP" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
@@ -191,13 +191,13 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Your Story</label>
               <textarea v-model="form.about_blurb" class="field resize-none" rows="5"
-                placeholder="Tell customers who you are. e.g. Family-owned since 1998, serving the Monaca area with quality used vehicles and honest deals." />
+                placeholder="Tell customers who you are — how long you've been in business, what makes you different, why they should choose you." />
               <p class="text-xs text-gray-400 mt-1">Write it in your own voice — this is what customers will read.</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Mission Statement <span class="text-gray-400 font-normal">(optional)</span></label>
               <textarea v-model="form.about_mission" class="field resize-none" rows="2"
-                placeholder='e.g. "To provide every customer with an honest, transparent car-buying experience."' />
+                placeholder="What your dealership stands for, in one or two sentences." />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Year Founded <span class="text-gray-400 font-normal">(optional)</span></label>
@@ -253,7 +253,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Your Financing Pitch</label>
               <textarea v-model="form.financing_blurb" class="field resize-none" rows="3"
-                placeholder="e.g. We work with over 10 local lenders to get you approved, regardless of credit history. Bad credit, no credit, first-time buyer — we have options for everyone." />
+                placeholder="Describe your financing options — lenders you work with, credit situations you can handle, what makes your process easy for buyers." />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">External Application URL <span class="text-gray-400 font-normal">(optional)</span></label>
@@ -279,7 +279,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Intro Text</label>
               <textarea v-model="form.schedule_service_blurb" class="field resize-none" rows="2"
-                placeholder="e.g. Our service team is ready to help. Book an appointment below or give us a call." />
+                placeholder="Brief intro for your service page — what you offer, how to book, what to expect." />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Calendar Booking URL <span class="text-gray-400 font-normal">(optional)</span></label>
