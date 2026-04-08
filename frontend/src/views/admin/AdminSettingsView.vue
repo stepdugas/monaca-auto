@@ -401,7 +401,7 @@
           <label class="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition">
             <div>
               <p class="text-sm font-semibold text-gray-800">Show CARFAX Report Links</p>
-              <p class="text-xs text-gray-500 mt-0.5">Displays a "View CARFAX Report" button on each vehicle listing page</p>
+              <p class="text-xs text-gray-500 mt-0.5">Adds a "View CARFAX Report" button to each listing. No dealer account required — clicking it takes customers to carfax.com where they can purchase the report for that VIN.</p>
             </div>
             <input v-model="form.carfax_enabled" type="checkbox" class="w-5 h-5 accent-blue-600 cursor-pointer flex-shrink-0 ml-4" />
           </label>
