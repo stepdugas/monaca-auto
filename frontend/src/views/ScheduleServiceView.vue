@@ -217,6 +217,13 @@ import axios from 'axios'
 import PageLayout from '../components/layout/PageLayout.vue'
 import { siteSettings } from '../composables/useSiteSettings'
 import { API_BASE_URL } from '../config'
+import { usePageMeta } from '../composables/usePageMeta'
+
+usePageMeta({
+  title:       'Schedule Service',
+  description: 'Book a service appointment at Monaca Auto Sales in Monaca, PA. Our team keeps your vehicle running its best — Beaver County\'s trusted auto service.',
+  path:        '/schedule-service',
+})
 
 // ── Form state ────────────────────────────────────────────────────────────
 const serviceForm = ref({

@@ -226,6 +226,13 @@ import axios from 'axios'
 import PageLayout from '../components/layout/PageLayout.vue'
 import { siteSettings } from '../composables/useSiteSettings'
 import { API_BASE_URL } from '../config'
+import { usePageMeta } from '../composables/usePageMeta'
+
+usePageMeta({
+  title:       'Financing',
+  description: 'Flexible auto financing for every credit type at Monaca Auto Sales in Monaca, PA. Get pre-approved today — all credit types welcome.',
+  path:        '/financing',
+})
 
 // ── Payment calculator ───────────────────────────────────────────────────
 const calc = ref({ price: 25000, down: 3000, rate: 6.9, term: 60 })

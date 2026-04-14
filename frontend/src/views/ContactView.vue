@@ -215,6 +215,13 @@ import { ref, computed } from 'vue'
 import PageLayout from '../components/layout/PageLayout.vue'
 import { submitContact } from '../api'
 import { siteSettings } from '../composables/useSiteSettings'
+import { usePageMeta } from '../composables/usePageMeta'
+
+usePageMeta({
+  title:       'Contact Us',
+  description: 'Get in touch with Monaca Auto Sales. Call (724) 774-3002, visit us at 303 9th Street, Monaca, PA 15061, or send a message online.',
+  path:        '/contact',
+})
 
 const form = ref({
   firstName: '', lastName: '', email: '', phone: '', subject: '', message: '',

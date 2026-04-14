@@ -21,7 +21,13 @@ import WhyUsSection        from '../components/home/WhyUsSection.vue'
 import TestimonialsSection from '../components/home/TestimonialsSection.vue'
 import HoursSection        from '../components/home/HoursSection.vue'
 import { siteSettings }    from '../composables/useSiteSettings'
+import { usePageMeta }     from '../composables/usePageMeta'
 import { getReviews }      from '../api'
+
+usePageMeta({
+  description: 'Monaca Auto Sales — quality used cars, trucks, and SUVs at 303 9th Street, Monaca, PA. Serving Beaver County and the greater Pittsburgh area. Financing available.',
+  path:        '/',
+})
 
 const reviews = ref([])
 

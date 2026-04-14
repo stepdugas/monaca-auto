@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SITEMAP — Monaca Auto Sales | Monaca, PA (Beaver County)
+  Set VITE_SITE_URL in Netlify env vars (no trailing slash)
+  e.g. VITE_SITE_URL=https://monacaautosales.com
+  Then do a find-replace on https://monacaautosales.com with your production domain.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- ── Home ── -->
+  <url>
+    <loc>https://monacaautosales.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- ── Inventory ── -->
+  <url>
+    <loc>https://monacaautosales.com/inventory</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── About ── -->
+  <url>
+    <loc>https://monacaautosales.com/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ── Contact ── -->
+  <url>
+    <loc>https://monacaautosales.com/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ── Financing ── -->
+  <url>
+    <loc>https://monacaautosales.com/financing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ── Schedule Service ── -->
+  <url>
+    <loc>https://monacaautosales.com/schedule-service</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ── Staff ── -->
+  <url>
+    <loc>https://monacaautosales.com/staff</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>

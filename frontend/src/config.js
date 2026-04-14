@@ -37,6 +37,9 @@ export const TWITTER_URL   = null
 // Primary brand color (CSS hex) — also update tailwind.config.js > primary
 export const PRIMARY_COLOR = '#3b82f6'
 
+// Site URL — set VITE_SITE_URL in Netlify env vars (no trailing slash)
+export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://monacaautosales.com'
+
 // Backend API base URL — update for production
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 

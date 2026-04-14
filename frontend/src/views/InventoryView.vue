@@ -107,6 +107,13 @@ import FilterBar  from '../components/inventory/FilterBar.vue'
 import CarCard    from '../components/inventory/CarCard.vue'
 import EditCarModal from '../components/EditCarModal.vue'
 import { getInventory } from '../api'
+import { usePageMeta } from '../composables/usePageMeta'
+
+usePageMeta({
+  title:       'Browse Inventory',
+  description: 'Shop used cars, trucks, and SUVs at Monaca Auto Sales in Monaca, PA. New listings added regularly. Serving Beaver County and Pittsburgh.',
+  path:        '/inventory',
+})
 
 const cars       = ref([])
 const loading    = ref(true)

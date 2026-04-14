@@ -16,4 +16,7 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import PageLayout from '../components/layout/PageLayout.vue'
+import { usePageMeta } from '../composables/usePageMeta'
+
+usePageMeta({ title: 'Page Not Found', noindex: true })
 </script>

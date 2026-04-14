@@ -123,6 +123,13 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import PageLayout from '../components/layout/PageLayout.vue'
 import { DEALERSHIP_NAME, API_BASE_URL } from '../config'
+import { usePageMeta } from '../composables/usePageMeta'
+
+usePageMeta({
+  title:       'Meet the Team',
+  description: 'Meet the friendly staff at Monaca Auto Sales in Monaca, PA. Our team is here to help you find the right vehicle in Beaver County.',
+  path:        '/staff',
+})
 
 const staff   = ref([])
 const loading = ref(true)
