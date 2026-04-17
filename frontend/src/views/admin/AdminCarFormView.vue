@@ -287,7 +287,8 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { getCar, createCar, updateCar } from '../../api'
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../../config'
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
+import { BrowserMultiFormatReader } from '@zxing/browser'
+import { NotFoundException, BarcodeFormat, DecodeHintType } from '@zxing/library'
 
 const route  = useRoute()
 const router = useRouter()
@@ -319,8 +320,15 @@ async function openScanner() {
   scannerOpen.value  = true
   await nextTick()
   try {
-    codeReader = new BrowserMultiFormatReader()
-    await codeReader.decodeFromVideoDevice(null, scannerVideo.value, (result, err) => {
+    const hints = new Map()
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.PDF_417,
+    ])
+    hints.set(DecodeHintType.TRY_HARDER, true)
+    codeReader = new BrowserMultiFormatReader(hints)
+    await codeReader.decodeFromVideoDevice(undefined, scannerVideo.value, (result, err) => {
       if (result) {
         const raw = result.getText().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '')
         // Accept 17-char VINs only
