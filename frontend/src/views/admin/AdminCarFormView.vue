@@ -105,6 +105,20 @@
                 placeholder="1HGBH41JXMN109186"
                 maxlength="17"
               />
+              <!-- Scan barcode button -->
+              <button
+                type="button"
+                @click="openScanner"
+                class="px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-50 whitespace-nowrap flex items-center gap-1.5"
+                title="Scan VIN barcode"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 9V5a2 2 0 012-2h4M3 15v4a2 2 0 002 2h4m10-16h-4a2 2 0 00-2 2v4m6 6v4a2 2 0 01-2 2h-4
+                       M7 8h.01M12 8h.01M17 8h.01M7 12h.01M12 12h.01M17 12h.01M7 16h.01M12 16h.01M17 16h.01"/>
+                </svg>
+                Scan
+              </button>
               <button
                 type="button"
                 @click="lookupVin"
@@ -115,6 +129,38 @@
               </button>
             </div>
           </div>
+
+          <!-- VIN Scanner Modal -->
+          <Teleport to="body">
+            <div v-if="scannerOpen"
+              class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+              @click.self="closeScanner"
+            >
+              <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                  <h3 class="font-semibold text-gray-900">Scan VIN Barcode</h3>
+                  <button type="button" @click="closeScanner" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="relative bg-black">
+                  <video ref="scannerVideo" class="w-full" autoplay muted playsinline></video>
+                  <!-- Scan guide overlay -->
+                  <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="w-4/5 h-20 border-2 border-white/70 rounded-lg flex items-center justify-center">
+                      <div class="w-full h-0.5 bg-red-400/70 animate-pulse"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="px-5 py-4 text-center">
+                  <p v-if="scannerError" class="text-sm text-red-500">{{ scannerError }}</p>
+                  <p v-else class="text-sm text-gray-500">Point camera at the VIN barcode on the dash or door jamb</p>
+                </div>
+              </div>
+            </div>
+          </Teleport>
           <div>
             <label class="form-label">Transmission</label>
             <select v-model="form.transmission" class="form-input">
@@ -237,10 +283,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { getCar, createCar, updateCar } from '../../api'
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../../config'
+import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
 
 const route  = useRoute()
 const router = useRouter()
@@ -260,6 +307,47 @@ const saving          = ref(false)
 const uploading       = ref(false)
 const saveError       = ref('')
 const vinLookupStatus = ref('')  // '', 'loading', 'ok', 'error'
+
+// --- VIN Scanner ---
+const scannerOpen  = ref(false)
+const scannerVideo = ref(null)
+const scannerError = ref('')
+let codeReader = null
+
+async function openScanner() {
+  scannerError.value = ''
+  scannerOpen.value  = true
+  await nextTick()
+  try {
+    codeReader = new BrowserMultiFormatReader()
+    await codeReader.decodeFromVideoDevice(null, scannerVideo.value, (result, err) => {
+      if (result) {
+        const raw = result.getText().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '')
+        // Accept 17-char VINs only
+        if (raw.length === 17) {
+          form.value.vin = raw
+          closeScanner()
+          onVinInput()
+        }
+      }
+      if (err && !(err instanceof NotFoundException)) {
+        console.warn('Scanner error:', err)
+      }
+    })
+  } catch (e) {
+    scannerError.value = e?.message?.includes('Permission')
+      ? 'Camera permission denied. Please allow camera access and try again.'
+      : 'Could not start camera. Try a different browser or device.'
+  }
+}
+
+function closeScanner() {
+  scannerOpen.value = false
+  if (codeReader) {
+    codeReader.reset()
+    codeReader = null
+  }
+}
 
 let vinDebounceTimer = null
 function onVinInput() {
