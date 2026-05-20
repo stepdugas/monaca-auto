@@ -53,12 +53,12 @@
               <input v-model.number="form.kbbValue" type="number" class="form-input flex-1" placeholder="Optional — shown as comparison on listing" min="0" />
               <a
                 v-if="form.year && form.make && form.model"
-                :href="`https://www.nadaguides.com/Cars/${form.year}/${encodeURIComponent(form.make)}/${encodeURIComponent(form.model)}`"
+                :href="`https://www.kbb.com/${form.make.toLowerCase().replace(/\s+/g, '-')}/${form.model.toLowerCase().replace(/\s+/g, '-')}/${form.year}/`"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg border border-gray-300 transition whitespace-nowrap flex items-center"
-                title="Look up NADA value"
-              >NADA Lookup</a>
+                title="Look up KBB value"
+              >KBB Lookup</a>
             </div>
           </div>
           <div>
@@ -156,7 +156,8 @@
                 </div>
                 <div class="px-5 py-4 text-center">
                   <p v-if="scannerError" class="text-sm text-red-500">{{ scannerError }}</p>
-                  <p v-else class="text-sm text-gray-500">Point camera at the VIN barcode on the dash or door jamb</p>
+                  <p v-else-if="scannerStatus === 'scanning'" class="text-sm text-green-600 font-medium animate-pulse">Scanning… point at the VIN barcode</p>
+                  <p v-else class="text-sm text-gray-500">Starting camera…</p>
                 </div>
               </div>
             </div>
@@ -310,51 +311,94 @@ const saveError       = ref('')
 const vinLookupStatus = ref('')  // '', 'loading', 'ok', 'error'
 
 // --- VIN Scanner ---
-const scannerOpen  = ref(false)
-const scannerVideo = ref(null)
-const scannerError = ref('')
-let codeReader = null
+const scannerOpen   = ref(false)
+const scannerVideo  = ref(null)
+const scannerError  = ref('')
+const scannerStatus = ref('')   // '' | 'scanning'
+let codeReader   = null
+let activeStream = null
+let scanActive   = false
 
 async function openScanner() {
-  scannerError.value = ''
-  scannerOpen.value  = true
+  scannerError.value  = ''
+  scannerStatus.value = ''
+  scannerOpen.value   = true
   await nextTick()
   try {
-    const hints = new Map()
-    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-      BarcodeFormat.CODE_39,
-      BarcodeFormat.CODE_128,
-      BarcodeFormat.PDF_417,
-    ])
-    hints.set(DecodeHintType.TRY_HARDER, true)
-    codeReader = new BrowserMultiFormatReader(hints)
-    await codeReader.decodeFromVideoDevice(undefined, scannerVideo.value, (result, err) => {
-      if (result) {
-        const raw = result.getText().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '')
-        // Accept 17-char VINs only
-        if (raw.length === 17) {
-          form.value.vin = raw
-          closeScanner()
-          onVinInput()
-        }
-      }
-      if (err && !(err instanceof NotFoundException)) {
-        console.warn('Scanner error:', err)
-      }
-    })
+    // Use the native Barcode Detection API where available (Chrome/Edge/Android).
+    // Falls back to @zxing on browsers that don't support it (Firefox, older Safari).
+    if ('BarcodeDetector' in window) {
+      await startNativeScanner()
+    } else {
+      await startZxingScanner()
+    }
   } catch (e) {
-    scannerError.value = e?.message?.includes('Permission')
+    scannerError.value = e?.message?.toLowerCase().includes('permission')
       ? 'Camera permission denied. Please allow camera access and try again.'
       : 'Could not start camera. Try a different browser or device.'
   }
 }
 
-function closeScanner() {
-  scannerOpen.value = false
-  if (codeReader) {
-    codeReader.reset()
-    codeReader = null
+async function startNativeScanner() {
+  const detector = new window.BarcodeDetector({ formats: ['code_39', 'code_128', 'pdf417'] })
+  activeStream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+  })
+  scannerVideo.value.srcObject = activeStream
+  await scannerVideo.value.play()
+  scannerStatus.value = 'scanning'
+  scanActive = true
+
+  async function scan() {
+    if (!scanActive) return
+    try {
+      const barcodes = await detector.detect(scannerVideo.value)
+      for (const barcode of barcodes) {
+        const raw = barcode.rawValue.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '')
+        if (raw.length === 17) {
+          form.value.vin = raw
+          closeScanner()
+          onVinInput()
+          return
+        }
+      }
+    } catch { /* frame failed — keep scanning */ }
+    requestAnimationFrame(scan)
   }
+  requestAnimationFrame(scan)
+}
+
+async function startZxingScanner() {
+  const hints = new Map()
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+    BarcodeFormat.CODE_39,
+    BarcodeFormat.CODE_128,
+    BarcodeFormat.PDF_417,
+  ])
+  hints.set(DecodeHintType.TRY_HARDER, true)
+  codeReader = new BrowserMultiFormatReader(hints)
+  scannerStatus.value = 'scanning'
+  await codeReader.decodeFromVideoDevice(undefined, scannerVideo.value, (result, err) => {
+    if (result) {
+      const raw = result.getText().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '')
+      if (raw.length === 17) {
+        form.value.vin = raw
+        closeScanner()
+        onVinInput()
+      }
+    }
+    if (err && !(err instanceof NotFoundException)) {
+      console.warn('Scanner error:', err)
+    }
+  })
+}
+
+function closeScanner() {
+  scannerOpen.value   = false
+  scannerStatus.value = ''
+  scanActive = false
+  if (codeReader)    { codeReader.reset(); codeReader = null }
+  if (activeStream)  { activeStream.getTracks().forEach(t => t.stop()); activeStream = null }
 }
 
 let vinDebounceTimer = null
@@ -428,6 +472,7 @@ async function uploadPhotos(e) {
   const files = Array.from(e.target.files)
   if (!files.length) return
   uploading.value = true
+  saveError.value = ''
   try {
     for (const file of files) {
       const fd = new FormData()
@@ -438,11 +483,17 @@ async function uploadPhotos(e) {
         { method: 'POST', body: fd }
       )
       const data = await res.json()
+      if (!res.ok || !data.secure_url) {
+        saveError.value = `Photo upload failed: ${data?.error?.message ?? 'Cloudinary error'}. Check Netlify env vars (VITE_CLOUDINARY_CLOUD_NAME, VITE_CLOUDINARY_UPLOAD_PRESET).`
+        return
+      }
       form.value.images = [
         ...form.value.images,
         { imageUrl: data.secure_url, isPrimary: form.value.images.length === 0, sortOrder: form.value.images.length },
       ]
     }
+  } catch (err) {
+    saveError.value = `Photo upload failed: ${err.message}`
   } finally {
     uploading.value = false
     e.target.value = ''
@@ -480,7 +531,13 @@ async function save() {
     }
     router.push({ name: 'AdminCars' })
   } catch (err) {
-    saveError.value = err.response?.data?.message ?? 'Failed to save. Please try again.'
+    const backendMsg = err.response?.data?.message || err.response?.data?.error
+    const status = err.response?.status
+    if (!err.response) {
+      saveError.value = 'Could not reach the server. The backend may be waking up — wait 30 seconds and try again.'
+    } else {
+      saveError.value = backendMsg ? `Save failed (${status}): ${backendMsg}` : `Save failed with status ${status}. Please try again.`
+    }
   } finally {
     saving.value = false
   }
