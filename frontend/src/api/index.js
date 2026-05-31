@@ -20,11 +20,11 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// ── Response interceptor: redirect to login on 401 ─────────────────────
+// ── Response interceptor: redirect to login on 401/403 ─────────────────
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 || err.response?.status === 403) {
       localStorage.removeItem('admin_token')
       window.location.href = '/admin/login'
     }
@@ -50,7 +50,7 @@ managerApi.interceptors.request.use((config) => {
 managerApi.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 || err.response?.status === 403) {
       localStorage.removeItem('manager_token')
       window.location.href = '/manager/login'
     }
