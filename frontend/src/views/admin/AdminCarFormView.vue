@@ -15,6 +15,24 @@
       <h1 class="text-2xl font-bold text-gray-900">{{ isEdit ? 'Edit Vehicle' : 'Add New Vehicle' }}</h1>
     </div>
 
+    <!-- Draft restore banner (new mode only) -->
+    <div v-if="draftBanner" class="mb-6 flex items-center justify-between gap-4 bg-amber-50 border border-amber-200 rounded-xl px-5 py-3">
+      <p class="text-sm text-amber-800">
+        <span class="font-semibold">You have an unsaved draft</span> from {{ draftAge }}.
+        Restore it to pick up where you left off.
+      </p>
+      <div class="flex gap-2 shrink-0">
+        <button type="button" @click="restoreDraft"
+          class="px-3 py-1.5 text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition">
+          Restore
+        </button>
+        <button type="button" @click="discardDraft"
+          class="px-3 py-1.5 text-sm font-semibold bg-white hover:bg-gray-50 text-gray-600 border border-gray-300 rounded-lg transition">
+          Discard
+        </button>
+      </div>
+    </div>
+
     <!-- Loading (edit mode) -->
     <div v-if="fetchingCar" class="space-y-4 animate-pulse">
       <div v-for="n in 8" :key="n" class="h-12 bg-gray-200 rounded-xl"></div>
@@ -284,7 +302,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { getCar, createCar, updateCar } from '../../api'
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../../config'
@@ -296,6 +314,20 @@ const router = useRouter()
 
 const isEdit     = computed(() => !!route.params.id)
 const currentYear = new Date().getFullYear()
+
+const DRAFT_KEY   = 'admin_car_new_draft'
+const draftBanner = ref(false)
+const pendingDraft = ref(null)
+
+const draftAge = computed(() => {
+  if (!pendingDraft.value?.savedAt) return ''
+  const diff = Date.now() - pendingDraft.value.savedAt
+  const mins = Math.floor(diff / 60000)
+  const hrs  = Math.floor(diff / 3600000)
+  if (hrs >= 1)  return `${hrs} hour${hrs > 1 ? 's' : ''} ago`
+  if (mins >= 1) return `${mins} minute${mins > 1 ? 's' : ''} ago`
+  return 'just now'
+})
 
 const form = ref({
   year: '', make: '', model: '', trim: '', price: '', mileage: '',
@@ -448,22 +480,64 @@ function toTitleCase(str) {
   return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
 }
 
-// Load existing car data in edit mode
+// Auto-save draft to localStorage (new mode only)
+watch([form, featuresText], () => {
+  if (isEdit.value) return
+  localStorage.setItem(DRAFT_KEY, JSON.stringify({
+    form: form.value,
+    featuresText: featuresText.value,
+    savedAt: Date.now(),
+  }))
+}, { deep: true })
+
+function restoreDraft() {
+  const d = pendingDraft.value
+  if (!d) return
+  Object.assign(form.value, d.form)
+  featuresText.value = d.featuresText || ''
+  draftBanner.value  = false
+  pendingDraft.value = null
+}
+
+function discardDraft() {
+  localStorage.removeItem(DRAFT_KEY)
+  draftBanner.value  = false
+  pendingDraft.value = null
+}
+
+// Load existing car data in edit mode; check for draft in new mode
 onMounted(async () => {
-  if (!isEdit.value) return
-  fetchingCar.value = true
-  try {
-    const res = await getCar(route.params.id)
-    const car = res.data
-    Object.assign(form.value, car)
-    // Flatten features array to line-separated text
-    const f = car.features
-    if (Array.isArray(f)) featuresText.value = f.join('\n')
-    else if (typeof f === 'string') {
-      try { featuresText.value = JSON.parse(f).join('\n') } catch { featuresText.value = f }
+  if (isEdit.value) {
+    fetchingCar.value = true
+    try {
+      const res = await getCar(route.params.id)
+      const car = res.data
+      Object.assign(form.value, car)
+      // Flatten features array to line-separated text
+      const f = car.features
+      if (Array.isArray(f)) featuresText.value = f.join('\n')
+      else if (typeof f === 'string') {
+        try { featuresText.value = JSON.parse(f).join('\n') } catch { featuresText.value = f }
+      }
+    } finally {
+      fetchingCar.value = false
     }
-  } finally {
-    fetchingCar.value = false
+  } else {
+    // Offer to restore a saved draft (ignore drafts older than 7 days)
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Date.now() - parsed.savedAt < 7 * 24 * 60 * 60 * 1000) {
+          pendingDraft.value = parsed
+          draftBanner.value  = true
+        } else {
+          localStorage.removeItem(DRAFT_KEY)
+        }
+      }
+    } catch {
+      localStorage.removeItem(DRAFT_KEY)
+    }
   }
 })
 
@@ -528,6 +602,7 @@ async function save() {
       await updateCar(route.params.id, payload)
     } else {
       await createCar(payload)
+      localStorage.removeItem(DRAFT_KEY)
     }
     router.push({ name: 'AdminCars' })
   } catch (err) {
