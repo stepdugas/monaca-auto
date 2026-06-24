@@ -47,7 +47,13 @@
                   </a>
                 </td>
                 <td class="px-5 py-3 text-gray-500">{{ c.phone || '—' }}</td>
-                <td class="px-5 py-3 text-gray-500 text-xs">{{ c.carId ? `#${c.carId}` : '—' }}</td>
+                <td class="px-5 py-3 text-gray-500 text-xs">
+                  <span v-if="c.carId && carMap[c.carId]" class="font-medium text-gray-700">
+                    {{ carMap[c.carId].year }} {{ carMap[c.carId].make }} {{ carMap[c.carId].model }}
+                  </span>
+                  <span v-else-if="c.carId" class="text-gray-400">#{{ c.carId }}</span>
+                  <span v-else class="text-gray-400">—</span>
+                </td>
                 <td class="px-5 py-3 text-gray-400 text-xs">{{ formatDate(c.createdAt) }}</td>
                 <td class="px-5 py-3 text-gray-400 text-xs">
                   <svg class="w-4 h-4 transition-transform" :class="expanded === c.id ? 'rotate-180' : ''"
@@ -73,16 +79,22 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getContactSubmissions } from '../../api'
+import { getContactSubmissions, getInventory } from '../../api'
 
 const contacts = ref([])
+const carMap   = ref({})
 const loading  = ref(true)
 const expanded = ref(null)
 
 onMounted(async () => {
   try {
-    const res = await getContactSubmissions()
-    contacts.value = res.data
+    const [contactsRes, inventoryRes] = await Promise.all([
+      getContactSubmissions(),
+      getInventory({ size: 500 }),
+    ])
+    contacts.value = contactsRes.data
+    const cars = inventoryRes.data?.content ?? inventoryRes.data ?? []
+    cars.forEach(c => { carMap.value[c.id] = c })
   } finally {
     loading.value = false
   }

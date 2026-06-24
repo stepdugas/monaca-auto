@@ -586,7 +586,33 @@ function removeImage(idx) {
   }
 }
 
+function isTokenValid() {
+  const token = localStorage.getItem('admin_token')
+  if (!token) return false
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return Date.now() < payload.exp * 1000
+  } catch {
+    return false
+  }
+}
+
 async function save() {
+  // Pre-check: if token is expired, save draft and redirect to login
+  if (!isTokenValid()) {
+    if (!isEdit.value) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        form: form.value, featuresText: featuresText.value, savedAt: Date.now(),
+      }))
+    }
+    saveError.value = 'Your session has expired. Redirecting to login — your draft has been saved.'
+    setTimeout(() => {
+      const redirect = encodeURIComponent(window.location.pathname)
+      window.location.href = `/admin/login?redirect=${redirect}`
+    }, 1500)
+    return
+  }
+
   saving.value    = true
   saveError.value = ''
   try {

@@ -70,10 +70,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { adminLogin } from '../../api'
 import { siteSettings } from '../../composables/useSiteSettings'
 
+const route    = useRoute()
 const router   = useRouter()
 const form     = ref({ username: '', password: '' })
 const loading  = ref(false)
@@ -85,7 +86,8 @@ async function login() {
   try {
     const res = await adminLogin(form.value)
     localStorage.setItem('admin_token', res.data.token)
-    router.push({ name: 'AdminHome' })
+    const redirect = route.query.redirect
+    router.push(redirect || { name: 'AdminHome' })
   } catch (err) {
     errorMsg.value = err.response?.status === 401
       ? 'Invalid username or password.'
