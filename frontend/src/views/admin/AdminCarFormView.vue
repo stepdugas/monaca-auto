@@ -632,12 +632,25 @@ async function save() {
     }
     router.push({ name: 'AdminCars' })
   } catch (err) {
-    const backendMsg = err.response?.data?.message || err.response?.data?.error
-    const status = err.response?.status
+    const status  = err.response?.status
+    const body    = err.response?.data
+    const backendMsg = body?.message || body?.error || (typeof body === 'string' ? body : null)
+
     if (!err.response) {
-      saveError.value = 'Could not reach the server. The backend may be waking up — wait 30 seconds and try again.'
+      const isTimeout = err.code === 'ECONNABORTED'
+      saveError.value = isTimeout
+        ? `Request timed out after 10 s. The Render backend may be cold-starting (can take up to 60 s). Wait 30 seconds and try again. If this keeps happening, check the Render dashboard.`
+        : `Could not reach the server (${err.message}). Check your internet connection and verify the Render backend is running at https://monaca-auto-sales.onrender.com/actuator/health`
+    } else if (status === 401) {
+      saveError.value = `Authentication error (401): your session was rejected by the server. Please log out and log back in, then try again.`
+    } else if (status === 403) {
+      saveError.value = `Permission denied (403): the server rejected this request. This usually means your session expired mid-save. Log out, log back in, and try again.`
+    } else if (status === 400) {
+      saveError.value = `Validation error (400): ${backendMsg || 'one or more fields were rejected by the server. Check that all required fields are filled in.'}`
+    } else if (status >= 500) {
+      saveError.value = `Server error (${status}): ${backendMsg || 'an unexpected error occurred on the backend.'}  Check the Render logs for details.`
     } else {
-      saveError.value = backendMsg ? `Save failed (${status}): ${backendMsg}` : `Save failed with status ${status}. Please try again.`
+      saveError.value = `Save failed (${status})${backendMsg ? ': ' + backendMsg : '. Please try again.'}`
     }
   } finally {
     saving.value = false

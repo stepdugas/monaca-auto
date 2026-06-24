@@ -144,10 +144,20 @@ router.beforeEach((to, from, next) => {
     document.title = to.meta.title
   }
 
-  // Admin auth check
+  // Admin auth check — verify token exists AND is not expired
   if (to.meta.requiresAdmin) {
-    const isLoggedIn = localStorage.getItem('admin_token')
-    if (!isLoggedIn) {
+    const token = localStorage.getItem('admin_token')
+    if (!token) {
+      return next({ name: 'AdminLogin', query: { redirect: to.fullPath } })
+    }
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      if (Date.now() >= payload.exp * 1000) {
+        localStorage.removeItem('admin_token')
+        return next({ name: 'AdminLogin', query: { redirect: to.fullPath } })
+      }
+    } catch {
+      localStorage.removeItem('admin_token')
       return next({ name: 'AdminLogin', query: { redirect: to.fullPath } })
     }
   }
