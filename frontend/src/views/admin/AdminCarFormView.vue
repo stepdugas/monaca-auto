@@ -648,7 +648,11 @@ async function save() {
           form: form.value, featuresText: featuresText.value, savedAt: Date.now(),
         }))
       }
-      saveError.value = `Server rejected the request (${status}). Your draft has been saved. Please log out, log back in, and try again.`
+      // Diagnostic info so we can figure out why the backend rejected the request
+      const token = localStorage.getItem('admin_token')
+      const tokenInfo = token ? `token: yes (${token.length} chars, starts: ${token.substring(0, 20)}…)` : 'token: MISSING'
+      const reqHeaders = err.config?.headers?.Authorization ? 'auth header: sent' : 'auth header: NOT SENT'
+      saveError.value = `Server rejected the request (${status}). Your draft has been saved. Please screenshot this and send to Step. [DEBUG: ${tokenInfo}, ${reqHeaders}]`
     } else if (status === 400) {
       saveError.value = `Validation error (400): ${backendMsg || 'one or more fields were rejected by the server. Check that all required fields are filled in.'}`
     } else if (status >= 500) {
