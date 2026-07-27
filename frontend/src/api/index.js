@@ -7,7 +7,7 @@ import { API_BASE_URL } from '../config'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -21,10 +21,20 @@ api.interceptors.request.use((config) => {
 })
 
 // ── Response interceptor: redirect to login on 401/403 ─────────────────
+// Skip redirect for login endpoints (401 = wrong password, not expired session)
+// and when already on the login page (prevents redirect loop).
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
+    const reqUrl = err.config?.url || ''
+    const isLoginRequest = reqUrl.includes('/login')
+    const isOnLoginPage = window.location.pathname.includes('/login')
+
+    if (
+      !isLoginRequest &&
+      !isOnLoginPage &&
+      (err.response?.status === 401 || err.response?.status === 403)
+    ) {
       localStorage.removeItem('admin_token')
       const redirect = encodeURIComponent(window.location.pathname)
       window.location.href = `/admin/login?redirect=${redirect}`
@@ -36,7 +46,7 @@ api.interceptors.response.use(
 // ── Manager API instance (uses manager_token) ───────────────────────────
 const managerApi = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -51,7 +61,15 @@ managerApi.interceptors.request.use((config) => {
 managerApi.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
+    const reqUrl = err.config?.url || ''
+    const isLoginRequest = reqUrl.includes('/login')
+    const isOnLoginPage = window.location.pathname.includes('/login')
+
+    if (
+      !isLoginRequest &&
+      !isOnLoginPage &&
+      (err.response?.status === 401 || err.response?.status === 403)
+    ) {
       localStorage.removeItem('manager_token')
       window.location.href = '/manager/login'
     }

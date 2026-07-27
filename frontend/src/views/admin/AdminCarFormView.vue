@@ -639,7 +639,7 @@ async function save() {
     if (!err.response) {
       const isTimeout = err.code === 'ECONNABORTED'
       saveError.value = isTimeout
-        ? `Request timed out after 10 s. The Render backend may be cold-starting (can take up to 60 s). Wait 30 seconds and try again. If this keeps happening, check the Render dashboard.`
+        ? `Request timed out. The Render backend may be cold-starting. Wait 30 seconds and try again. If this keeps happening, check the Render dashboard.`
         : `Could not reach the server (${err.message}). Check your internet connection and verify the Render backend is running at https://monaca-auto-sales.onrender.com/actuator/health`
     } else if (status === 401) {
       saveError.value = `Authentication error (401): your session was rejected by the server. Please log out and log back in, then try again.`

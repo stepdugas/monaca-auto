@@ -86,8 +86,12 @@ async function login() {
   try {
     const res = await adminLogin(form.value)
     localStorage.setItem('admin_token', res.data.token)
+    // Only redirect to safe admin paths — never back to the login page itself
     const redirect = route.query.redirect
-    router.push(redirect || { name: 'AdminHome' })
+    const safeRedirect = redirect && redirect.startsWith('/admin') && !redirect.includes('/login')
+      ? redirect
+      : null
+    router.push(safeRedirect || { name: 'AdminHome' })
   } catch (err) {
     errorMsg.value = err.response?.status === 401
       ? 'Invalid username or password.'
