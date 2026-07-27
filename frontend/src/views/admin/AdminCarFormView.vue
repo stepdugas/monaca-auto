@@ -641,10 +641,14 @@ async function save() {
       saveError.value = isTimeout
         ? `Request timed out. The Render backend may be cold-starting. Wait 30 seconds and try again. If this keeps happening, check the Render dashboard.`
         : `Could not reach the server (${err.message}). Check your internet connection and verify the Render backend is running at https://monaca-auto-sales.onrender.com/actuator/health`
-    } else if (status === 401) {
-      saveError.value = `Authentication error (401): your session was rejected by the server. Please log out and log back in, then try again.`
-    } else if (status === 403) {
-      saveError.value = `Permission denied (403): the server rejected this request. This usually means your session expired mid-save. Log out, log back in, and try again.`
+    } else if (status === 401 || status === 403) {
+      // Save draft so the user doesn't lose their work
+      if (!isEdit.value) {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          form: form.value, featuresText: featuresText.value, savedAt: Date.now(),
+        }))
+      }
+      saveError.value = `Server rejected the request (${status}). Your draft has been saved. Please log out, log back in, and try again.`
     } else if (status === 400) {
       saveError.value = `Validation error (400): ${backendMsg || 'one or more fields were rejected by the server. Check that all required fields are filled in.'}`
     } else if (status >= 500) {

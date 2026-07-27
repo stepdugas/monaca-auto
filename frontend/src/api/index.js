@@ -20,24 +20,19 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// ── Response interceptor: redirect to login on 401/403 ─────────────────
-// Skip redirect for login endpoints (401 = wrong password, not expired session)
-// and when already on the login page (prevents redirect loop).
+// ── Response interceptor: clear token on 401 ──────────────────────────
+// Never auto-redirect — let each component's catch block show the actual
+// error so the user (and us debugging) can see what went wrong.
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    const reqUrl = err.config?.url || ''
-    const isLoginRequest = reqUrl.includes('/login')
-    const isOnLoginPage = window.location.pathname.includes('/login')
-
-    if (
-      !isLoginRequest &&
-      !isOnLoginPage &&
-      (err.response?.status === 401 || err.response?.status === 403)
-    ) {
+    if (err.response?.status === 401) {
+      console.error('[api] 401 on', err.config?.method?.toUpperCase(), err.config?.url)
       localStorage.removeItem('admin_token')
-      const redirect = encodeURIComponent(window.location.pathname)
-      window.location.href = `/admin/login?redirect=${redirect}`
+    }
+    if (err.response?.status === 403) {
+      console.error('[api] 403 on', err.config?.method?.toUpperCase(), err.config?.url,
+        '— response:', err.response?.data)
     }
     return Promise.reject(err)
   },
@@ -61,17 +56,9 @@ managerApi.interceptors.request.use((config) => {
 managerApi.interceptors.response.use(
   (res) => res,
   (err) => {
-    const reqUrl = err.config?.url || ''
-    const isLoginRequest = reqUrl.includes('/login')
-    const isOnLoginPage = window.location.pathname.includes('/login')
-
-    if (
-      !isLoginRequest &&
-      !isOnLoginPage &&
-      (err.response?.status === 401 || err.response?.status === 403)
-    ) {
+    if (err.response?.status === 401) {
+      console.error('[managerApi] 401 on', err.config?.method?.toUpperCase(), err.config?.url)
       localStorage.removeItem('manager_token')
-      window.location.href = '/manager/login'
     }
     return Promise.reject(err)
   },
