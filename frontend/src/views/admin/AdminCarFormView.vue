@@ -288,7 +288,14 @@
       </div>
 
       <!-- Error / submit -->
-      <p v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</p>
+      <div v-if="saveError" class="bg-red-50 border border-red-200 rounded-xl p-4 space-y-2">
+        <p class="text-red-600 text-sm">{{ saveError }}</p>
+        <p v-if="debugInfo" class="text-red-400 text-xs font-mono">{{ debugInfo }}</p>
+        <button v-if="saveError.includes('403')" type="button" @click="runAuthCheck"
+          class="text-xs px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition">
+          Run Auth Check (tap this and screenshot)
+        </button>
+      </div>
       <div class="flex gap-4">
         <button type="submit" class="btn-primary flex-1 py-4" :disabled="saving">
           {{ saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Add Vehicle') }}
@@ -305,6 +312,7 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { getCar, createCar, updateCar } from '../../api'
+import api from '../../api'
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../../config'
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import { NotFoundException, BarcodeFormat, DecodeHintType } from '@zxing/library'
@@ -336,6 +344,7 @@ const form = ref({
   description: '', images: [],
 })
 const featuresText    = ref('')
+const debugInfo       = ref('')
 const fetchingCar     = ref(false)
 const saving          = ref(false)
 const uploading       = ref(false)
@@ -583,6 +592,16 @@ function removeImage(idx) {
   // Ensure at least one primary
   if (form.value.images.length && !form.value.images.some(i => i.isPrimary)) {
     form.value.images[0].isPrimary = true
+  }
+}
+
+async function runAuthCheck() {
+  debugInfo.value = 'Checking...'
+  try {
+    const res = await api.get('/api/admin/check-auth')
+    debugInfo.value = 'Auth check result: ' + JSON.stringify(res.data)
+  } catch (err) {
+    debugInfo.value = 'Auth check failed: ' + (err.response?.status || err.message) + ' ' + JSON.stringify(err.response?.data || '')
   }
 }
 

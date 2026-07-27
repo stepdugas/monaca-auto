@@ -2,6 +2,8 @@ package com.dealership.api.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,8 @@ import java.util.Date;
  */
 @Component
 public class JwtTokenProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     private final SecretKey key;
     private final long expirationMs;
@@ -65,7 +69,11 @@ public class JwtTokenProvider {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT expired: {}", e.getMessage());
+            return false;
         } catch (JwtException | IllegalArgumentException e) {
+            log.warn("JWT validation failed: {} — {}", e.getClass().getSimpleName(), e.getMessage());
             return false;
         }
     }

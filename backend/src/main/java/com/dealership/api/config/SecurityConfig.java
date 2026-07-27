@@ -67,6 +67,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/email/test").permitAll()
                 // Actuator health endpoint (used by keep-alive ping)
                 .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
+                // Debug auth check (temporary — remove after debugging)
+                .requestMatchers(HttpMethod.GET, "/api/admin/check-auth").permitAll()
                 // Admin dashboard stats
                 .requestMatchers(HttpMethod.GET, "/api/admin/dashboard").authenticated()
                 // Admin login — public

@@ -14,12 +14,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Validates the JWT in the Authorization header and populates the
  * SecurityContext so @PreAuthorize("hasRole('ADMIN')") works.
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtTokenProvider tokenProvider;
 
@@ -36,16 +41,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String token = resolveToken(request);
+        String method = request.getMethod();
+        String uri = request.getRequestURI();
 
-        if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
-            String username = tokenProvider.getUsername(token);
-            String role = tokenProvider.getRole(token);
-            var auth = new UsernamePasswordAuthenticationToken(
-                username,
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + role))
-            );
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        if (StringUtils.hasText(token)) {
+            if (tokenProvider.validateToken(token)) {
+                String username = tokenProvider.getUsername(token);
+                String role = tokenProvider.getRole(token);
+                var auth = new UsernamePasswordAuthenticationToken(
+                    username,
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                );
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } else {
+                log.warn("JWT INVALID for {} {} — token starts: {}…", method, uri,
+                    token.substring(0, Math.min(token.length(), 20)));
+            }
+        } else if (!"GET".equals(method) && !uri.contains("/login") && !uri.contains("/public")) {
+            log.warn("NO TOKEN for {} {} — Auth header: {}", method, uri,
+                request.getHeader("Authorization"));
         }
 
         filterChain.doFilter(request, response);
