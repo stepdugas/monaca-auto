@@ -192,16 +192,6 @@ function clearFilters() {
   emits('update:modelValue', {})
 }
 
-const priceOptions = [
-  { label: 'Under $10,000',  value: 10000 },
-  { label: 'Under $20,000',  value: 20000 },
-  { label: 'Under $30,000',  value: 30000 },
-  { label: 'Under $40,000',  value: 40000 },
-  { label: 'Under $50,000',  value: 50000 },
-  { label: 'Under $75,000',  value: 75000 },
-  { label: 'Under $100,000', value: 100000 },
-]
-
 const mileageOptions = [
   { label: 'Under 10,000',  value: 10000 },
   { label: 'Under 25,000',  value: 25000 },

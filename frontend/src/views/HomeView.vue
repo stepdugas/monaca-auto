@@ -7,7 +7,7 @@
     <HeroSection />
     <FeaturedInventory />
     <WhyUsSection />
-    <TestimonialsSection v-if="siteSettings.reviews_enabled === 'true' && reviews.length" :reviews="reviews" />
+    <TestimonialsSection v-if="siteSettings.reviewsEnabled === 'true' && reviews.length" :reviews="reviews" />
     <HoursSection />
   </PageLayout>
 </template>

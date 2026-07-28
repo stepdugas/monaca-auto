@@ -139,7 +139,6 @@ const router = createRouter({
 // ── Navigation guard: protect admin routes ──────────────────────────────
 router.beforeEach((to, from, next) => {
   // Update document title
-  const { DEALERSHIP_NAME } = /* will be tree-shaken */ { DEALERSHIP_NAME: '' }
   if (to.meta.title) {
     document.title = to.meta.title
   }

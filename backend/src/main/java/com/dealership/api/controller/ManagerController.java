@@ -13,8 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Manager-tier API endpoints.
@@ -43,6 +45,11 @@ public class ManagerController {
 
     @Value("${dealership.manager.password}")
     private String managerPassword;
+
+    /** Keys that managers are not allowed to modify. */
+    private static final Set<String> SENSITIVE_KEYS = Set.of(
+        "admin_password", "manager_password"
+    );
 
     public ManagerController(JwtTokenProvider jwtTokenProvider,
                              ContactSubmissionRepository contactRepo,
@@ -102,7 +109,9 @@ public class ManagerController {
     @PutMapping("/settings")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Map<String, String>> updateSettings(@RequestBody Map<String, String> updates) {
-        return ResponseEntity.ok(configService.setAll(updates));
+        Map<String, String> filtered = new HashMap<>(updates);
+        SENSITIVE_KEYS.forEach(filtered::remove);
+        return ResponseEntity.ok(configService.setAll(filtered));
     }
 
     /**
@@ -111,9 +120,13 @@ public class ManagerController {
      */
     @PutMapping("/settings/{key}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<DealershipConfig> updateSetting(
+    public ResponseEntity<?> updateSetting(
             @PathVariable String key,
             @RequestBody Map<String, String> body) {
+        if (SENSITIVE_KEYS.contains(key)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Cannot modify protected setting: " + key));
+        }
         String value = body.get("value");
         return ResponseEntity.ok(configService.set(key, value));
     }

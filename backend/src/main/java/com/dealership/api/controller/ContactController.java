@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * REST controller for contact form submissions and client intake.
@@ -40,13 +41,22 @@ public class ContactController {
         this.carRepository = carRepository;
     }
 
+    /** Keys that must never be exposed on the public settings endpoint. */
+    private static final Set<String> SENSITIVE_KEYS = Set.of(
+        "admin_password", "manager_password", "notification_email"
+    );
+
     /**
-     * GET /api/public/settings — returns all dealership config for the frontend.
+     * GET /api/public/settings — returns dealership config for the frontend,
+     * with sensitive keys filtered out.
      * No authentication required.
      */
     @GetMapping("/api/public/settings")
     public ResponseEntity<Map<String, String>> getPublicSettings() {
-        return ResponseEntity.ok(configService.getAll());
+        Map<String, String> all = configService.getAll();
+        Map<String, String> safe = new HashMap<>(all);
+        SENSITIVE_KEYS.forEach(safe::remove);
+        return ResponseEntity.ok(safe);
     }
 
     /**

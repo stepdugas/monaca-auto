@@ -99,7 +99,7 @@
           </div>
 
           <!-- CarFax Report Link -->
-          <div v-if="siteSettings.carfax_enabled === 'true' && car.vin" data-aos="fade-up">
+          <div v-if="siteSettings.carfaxEnabled === 'true' && car.vin" data-aos="fade-up">
             <a
               :href="`https://www.carfax.com/VehicleHistory/p/Report.cfx?partner=DLR_3&vin=${car.vin}`"
               target="_blank"
@@ -265,7 +265,6 @@ const route  = useRoute()
 const car    = ref(null)
 const loading = ref(true)
 const error  = ref(false)
-const isAdmin = ref(false)
 
 const activeIdx = ref(0)
 
@@ -321,19 +320,12 @@ onMounted(async () => {
   try {
     const res = await getCar(route.params.id)
     car.value = res.data
-    isAdmin.value = !!localStorage.getItem('admin_token')
   } catch {
     error.value = true
   } finally {
     loading.value = false
   }
 })
-
-function formatDate(dateString) {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
 
 // Contact form
 const form = ref({

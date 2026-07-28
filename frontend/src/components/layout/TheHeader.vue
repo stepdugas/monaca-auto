@@ -88,7 +88,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { DEALERSHIP_NAME } from '../../config'
 import { siteSettings } from '../../composables/useSiteSettings'
 
 const scrolled = ref(false)

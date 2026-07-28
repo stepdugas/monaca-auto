@@ -110,6 +110,9 @@ export const siteSettings = reactive({
   showStaff:           false,
   showFinancing:       false,
   showScheduleService: false,
+  // Feature toggles
+  carfaxEnabled:   'false',
+  reviewsEnabled:  'false',
 })
 
 // Fetch settings from backend and populate the reactive object
@@ -166,6 +169,10 @@ export async function fetchSiteSettings() {
     siteSettings.showStaff           = s.page_staff            === 'true'
     siteSettings.showFinancing       = s.page_financing        === 'true'
     siteSettings.showScheduleService = s.page_schedule_service === 'true'
+
+    // Feature toggles
+    if (s.carfax_enabled)  siteSettings.carfaxEnabled  = s.carfax_enabled
+    if (s.reviews_enabled) siteSettings.reviewsEnabled = s.reviews_enabled
   } catch {
     // Backend not running or not set up — silently fall back to config.js defaults
   }

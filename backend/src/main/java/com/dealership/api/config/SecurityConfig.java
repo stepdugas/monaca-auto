@@ -63,8 +63,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/financing-application").permitAll()
                 // Public service appointment request
                 .requestMatchers(HttpMethod.POST, "/api/schedule-service").permitAll()
-                // Public email test endpoint (for OpenClaw)
-                .requestMatchers(HttpMethod.POST, "/api/email/test").permitAll()
+                // Email test endpoint — requires authentication to prevent open relay
+                .requestMatchers(HttpMethod.POST, "/api/email/test").authenticated()
                 // Actuator health endpoint (used by keep-alive ping)
                 .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                 // Admin dashboard stats
