@@ -66,11 +66,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    /** Extract bearer token from Authorization header. */
+    /** Extract bearer token from Authorization header, falling back to ?token= query param. */
     private String resolveToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             return header.substring(7);
+        }
+        // Fallback: accept token as query parameter (browsers sometimes strip auth headers)
+        String queryToken = request.getParameter("token");
+        if (StringUtils.hasText(queryToken)) {
+            return queryToken;
         }
         return null;
     }

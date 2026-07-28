@@ -644,12 +644,23 @@ async function save() {
 
     const payload = { ...form.value, features }
 
+    const token = localStorage.getItem('admin_token')
     if (isEdit.value) {
-      await updateCar(route.params.id, payload)
+      const res = await fetch(`${API_BASE_URL}/api/inventory/${route.params.id}?token=${encodeURIComponent(token)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        throw { response: { status: res.status, data: text } }
+      }
     } else {
-      // Use fetch() directly to bypass any axios/interceptor issues
-      const token = localStorage.getItem('admin_token')
-      const res = await fetch(`${API_BASE_URL}/api/inventory`, {
+      // Send token both in header AND query param — guarantees it reaches the backend
+      const res = await fetch(`${API_BASE_URL}/api/inventory?token=${encodeURIComponent(token)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -659,7 +670,7 @@ async function save() {
       })
       if (!res.ok) {
         const text = await res.text().catch(() => '')
-        throw { response: { status: res.status, data: text }, fetchUsed: true }
+        throw { response: { status: res.status, data: text } }
       }
       localStorage.removeItem(DRAFT_KEY)
     }

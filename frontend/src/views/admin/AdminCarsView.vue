@@ -164,7 +164,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { getInventory, deleteCar } from '../../api'
+import { getInventory } from '../../api'
+import { API_BASE_URL } from '../../config'
 
 const cars         = ref([])
 const loading      = ref(true)
@@ -190,7 +191,12 @@ function confirmDelete(car) { deleteTarget.value = car }
 async function doDelete() {
   deleting.value = true
   try {
-    await deleteCar(deleteTarget.value.id)
+    const token = localStorage.getItem('admin_token')
+    const res = await fetch(`${API_BASE_URL}/api/inventory/${deleteTarget.value.id}?token=${encodeURIComponent(token)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+    if (!res.ok) throw new Error(`Delete failed: ${res.status}`)
     cars.value = cars.value.filter(c => c.id !== deleteTarget.value.id)
     total.value--
     deleteTarget.value = null
