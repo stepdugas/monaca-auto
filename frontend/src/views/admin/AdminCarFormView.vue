@@ -313,6 +313,7 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { getCar, createCar, updateCar } from '../../api'
 import api from '../../api'
+import { API_BASE_URL } from '../../config'
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../../config'
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import { NotFoundException, BarcodeFormat, DecodeHintType } from '@zxing/library'
@@ -646,7 +647,20 @@ async function save() {
     if (isEdit.value) {
       await updateCar(route.params.id, payload)
     } else {
-      await createCar(payload)
+      // Use fetch() directly to bypass any axios/interceptor issues
+      const token = localStorage.getItem('admin_token')
+      const res = await fetch(`${API_BASE_URL}/api/inventory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        throw { response: { status: res.status, data: text }, fetchUsed: true }
+      }
       localStorage.removeItem(DRAFT_KEY)
     }
     router.push({ name: 'AdminCars' })
