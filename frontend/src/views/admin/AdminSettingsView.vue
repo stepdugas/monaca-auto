@@ -461,7 +461,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { adminGetSettings, adminUpdateSettings, adminChangePassword, adminChangeManagerPassword, getReviews, adminCreateReview, adminDeleteReview } from '../../api/index'
+import { adminGetSettings, getReviews } from '../../api/index'
 import { HERO_PRESETS, fetchSiteSettings } from '../../composables/useSiteSettings'
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET, API_BASE_URL } from '../../config'
 
@@ -537,7 +537,13 @@ async function addReview() {
   reviewSaving.value = true
   reviewMsg.value = ''
   try {
-    await adminCreateReview({ ...newReview })
+    const token = localStorage.getItem('admin_token')
+    const res = await fetch(`${API_BASE_URL}/api/admin/reviews?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ ...newReview }),
+    })
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
     newReview.reviewerName = ''
     newReview.vehiclePurchased = ''
     newReview.rating = 5
@@ -552,7 +558,12 @@ async function addReview() {
 
 async function deleteReview(id) {
   if (!confirm('Remove this review?')) return
-  await adminDeleteReview(id)
+  const token = localStorage.getItem('admin_token')
+  const res = await fetch(`${API_BASE_URL}/api/admin/reviews/${id}?token=${encodeURIComponent(token)}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` },
+  })
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
   await loadReviews()
 }
 
@@ -618,7 +629,13 @@ async function save() {
         ? 'Closed'
         : `${formatTime(form[day.openKey])} – ${formatTime(form[day.closeKey])}`
     })
-    await adminUpdateSettings(updates)
+    const token = localStorage.getItem('admin_token')
+    const settingsRes = await fetch(`${API_BASE_URL}/api/manager/settings?token=${encodeURIComponent(token)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(updates),
+    })
+    if (!settingsRes.ok) throw new Error(`Request failed: ${settingsRes.status}`)
     await fetchSiteSettings()
     successMsg.value = 'Settings saved! Changes are now live on your site.'
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -660,14 +677,21 @@ async function changeAdminPassword() {
   pwSaving.admin = true
   pwMsg.admin = ''
   try {
-    await adminChangePassword(pwForm.currentPassword, pwForm.newPassword)
+    const token = localStorage.getItem('admin_token')
+    const res = await fetch(`${API_BASE_URL}/api/admin/change-password?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword }),
+    })
+    if (res.status === 401) throw { status: 401 }
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
     pwMsg.admin = 'Password updated successfully!'
     pwMsg.adminOk = true
     pwForm.currentPassword = ''
     pwForm.newPassword = ''
     pwForm.confirmPassword = ''
   } catch (err) {
-    pwMsg.admin = err.response?.status === 401 ? 'Current password is incorrect.' : 'Failed to update password.'
+    pwMsg.admin = err.status === 401 ? 'Current password is incorrect.' : 'Failed to update password.'
     pwMsg.adminOk = false
   } finally { pwSaving.admin = false }
 }
@@ -677,7 +701,13 @@ async function changeManagerPassword() {
   pwSaving.manager = true
   pwMsg.manager = ''
   try {
-    await adminChangeManagerPassword(pwForm.managerNewPassword)
+    const token = localStorage.getItem('admin_token')
+    const res = await fetch(`${API_BASE_URL}/api/admin/change-manager-password?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ newPassword: pwForm.managerNewPassword }),
+    })
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
     pwMsg.manager = 'Manager password updated!'
     pwMsg.managerOk = true
     pwForm.managerNewPassword = ''

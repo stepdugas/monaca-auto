@@ -225,8 +225,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import api from '../../api/index'
-import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../../config'
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET, API_BASE_URL } from '../../config'
 
 const staff       = ref([])
 const loading     = ref(true)
@@ -252,8 +251,12 @@ const form = ref(emptyForm())
 async function fetchStaff() {
   loading.value = true
   try {
-    const res = await api.get('/api/admin/staff')
-    staff.value = res.data
+    const token = localStorage.getItem('admin_token')
+    const res = await fetch(`${API_BASE_URL}/api/admin/staff?token=${encodeURIComponent(token)}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+    staff.value = await res.json()
   } finally {
     loading.value = false
   }
@@ -289,13 +292,26 @@ function cancelForm() {
 async function save() {
   saving.value = true
   try {
+    const token = localStorage.getItem('admin_token')
     if (editingId.value) {
-      const res = await api.put(`/api/admin/staff/${editingId.value}`, form.value)
+      const res = await fetch(`${API_BASE_URL}/api/admin/staff/${editingId.value}?token=${encodeURIComponent(token)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(form.value),
+      })
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+      const data = await res.json()
       const idx = staff.value.findIndex(m => m.id === editingId.value)
-      if (idx !== -1) staff.value[idx] = res.data
+      if (idx !== -1) staff.value[idx] = data
     } else {
-      const res = await api.post('/api/admin/staff', form.value)
-      staff.value.push(res.data)
+      const res = await fetch(`${API_BASE_URL}/api/admin/staff?token=${encodeURIComponent(token)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(form.value),
+      })
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+      const data = await res.json()
+      staff.value.push(data)
     }
     cancelForm()
   } finally {
@@ -330,7 +346,12 @@ function confirmDelete(member) {
 async function doDelete() {
   deleting.value = true
   try {
-    await api.delete(`/api/admin/staff/${deleteTarget.value.id}`)
+    const token = localStorage.getItem('admin_token')
+    const res = await fetch(`${API_BASE_URL}/api/admin/staff/${deleteTarget.value.id}?token=${encodeURIComponent(token)}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
     staff.value = staff.value.filter(m => m.id !== deleteTarget.value.id)
     deleteTarget.value = null
   } finally {

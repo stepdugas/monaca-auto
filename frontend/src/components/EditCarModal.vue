@@ -229,7 +229,7 @@
 
 <script setup>
 import { ref, computed, watch, Teleport, Transition } from 'vue'
-import { updateCar } from '../api'
+import { API_BASE_URL } from '../config'
 
 const props = defineProps({
   open: Boolean,
@@ -308,14 +308,24 @@ async function saveCar() {
       .map((f) => f.trim())
       .filter((f) => f)
 
-    const res = await updateCar(props.car.id, formData.value)
+    const token = localStorage.getItem('admin_token')
+    const res = await fetch(`${API_BASE_URL}/api/inventory/${props.car.id}?token=${encodeURIComponent(token)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(formData.value),
+    })
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}))
+      throw { status: res.status, message: errData.message }
+    }
+    const data = await res.json()
     success.value = true
     setTimeout(() => {
-      emits('save', res.data)
+      emits('save', data)
       emits('close')
     }, 1000)
   } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to save vehicle. Please try again.'
+    error.value = err.message || 'Failed to save vehicle. Please try again.'
   } finally {
     saving.value = false
   }

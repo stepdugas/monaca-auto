@@ -21,8 +21,7 @@ api.interceptors.request.use((config) => {
 })
 
 // ── Response interceptor: clear token on 401 ──────────────────────────
-// Never auto-redirect — let each component's catch block show the actual
-// error so the user (and us debugging) can see what went wrong.
+// Clear token on 401 so the router guard redirects to login on next navigation.
 api.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -73,30 +72,6 @@ export const getInventory = (filters = {}) =>
  */
 export const getCar = (id) => api.get(`/api/inventory/${id}`)
 
-/**
- * Create a new vehicle (admin only).
- * @param {Object} carData
- */
-export const createCar = (carData) => api.post('/api/inventory', carData)
-
-/**
- * Update an existing vehicle (admin only).
- * @param {number|string} id
- * @param {Object} carData
- */
-export const updateCar = (id, carData) => api.put(`/api/inventory/${id}`, carData)
-
-/**
- * Delete a vehicle (admin only).
- * @param {number|string} id
- */
-export const deleteCar = (id) => api.delete(`/api/inventory/${id}`)
-
-/**
- * Refresh KBB valuation for a specific vehicle (admin only).
- * @param {number|string} id
- */
-export const refreshKBBValue = (id) => api.post(`/api/inventory/${id}/refresh-kbb`)
 
 // ── Contact endpoint ────────────────────────────────────────────────────
 
@@ -111,9 +86,6 @@ export const submitContact = (payload) => api.post('/api/contact', payload)
 /** Get all dealership config settings (admin). */
 export const adminGetSettings = () => api.get('/api/manager/settings')
 
-/** Bulk-update dealership config settings (admin). */
-export const adminUpdateSettings = (updates) => api.put('/api/manager/settings', updates)
-
 /** Admin dashboard stats — inventory counts + recent contacts. */
 export const adminGetDashboard = () => api.get('/api/admin/dashboard')
 
@@ -125,13 +97,6 @@ export const adminGetDashboard = () => api.get('/api/admin/dashboard')
  */
 export const adminLogin = (credentials) => api.post('/api/admin/login', credentials)
 
-/** Admin changes their own password. Requires currentPassword + newPassword. */
-export const adminChangePassword = (currentPassword, newPassword) =>
-  api.post('/api/admin/change-password', { currentPassword, newPassword })
-
-/** Admin resets the manager password. Only requires newPassword. */
-export const adminChangeManagerPassword = (newPassword) =>
-  api.post('/api/admin/change-manager-password', { newPassword })
 
 // ── Contact submissions (admin) ─────────────────────────────────────────
 
@@ -143,11 +108,6 @@ export const getContactSubmissions = () => api.get('/api/admin/contacts')
 /** Fetch all reviews (public). */
 export const getReviews = () => api.get('/api/public/reviews')
 
-/** Admin: add a review. */
-export const adminCreateReview = (review) => api.post('/api/admin/reviews', review)
-
-/** Admin: delete a review by id. */
-export const adminDeleteReview = (id) => api.delete(`/api/admin/reviews/${id}`)
 
 // ── Manager auth + endpoints ─────────────────────────────────────────────
 
