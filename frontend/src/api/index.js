@@ -17,10 +17,6 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
-  // Debug: log auth state for non-GET requests (saves, creates, deletes)
-  if (config.method !== 'get') {
-    console.log('[api]', config.method?.toUpperCase(), config.url, token ? `token attached (${token.length} chars)` : 'NO TOKEN')
-  }
   return config
 })
 
@@ -31,12 +27,7 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      console.error('[api] 401 on', err.config?.method?.toUpperCase(), err.config?.url)
       localStorage.removeItem('admin_token')
-    }
-    if (err.response?.status === 403) {
-      console.error('[api] 403 on', err.config?.method?.toUpperCase(), err.config?.url,
-        '— response:', err.response?.data)
     }
     return Promise.reject(err)
   },
@@ -61,7 +52,6 @@ managerApi.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      console.error('[managerApi] 401 on', err.config?.method?.toUpperCase(), err.config?.url)
       localStorage.removeItem('manager_token')
     }
     return Promise.reject(err)

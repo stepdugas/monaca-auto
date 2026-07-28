@@ -55,12 +55,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } else {
-                log.warn("JWT INVALID for {} {} — token starts: {}…", method, uri,
-                    token.substring(0, Math.min(token.length(), 20)));
+                log.debug("Invalid JWT for {} {}", method, uri);
             }
-        } else if (!"GET".equals(method) && !uri.contains("/login") && !uri.contains("/public")) {
-            log.warn("NO TOKEN for {} {} — Auth header: {}", method, uri,
-                request.getHeader("Authorization"));
         }
 
         filterChain.doFilter(request, response);

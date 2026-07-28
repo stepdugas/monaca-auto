@@ -288,14 +288,7 @@
       </div>
 
       <!-- Error / submit -->
-      <div v-if="saveError" class="bg-red-50 border border-red-200 rounded-xl p-4 space-y-2">
-        <p class="text-red-600 text-sm">{{ saveError }}</p>
-        <p v-if="debugInfo" class="text-red-400 text-xs font-mono">{{ debugInfo }}</p>
-        <button v-if="saveError.includes('403')" type="button" @click="runAuthCheck"
-          class="text-xs px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition">
-          Run Auth Check (tap this and screenshot)
-        </button>
-      </div>
+      <p v-if="saveError" class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm">{{ saveError }}</p>
       <div class="flex gap-4">
         <button type="submit" class="btn-primary flex-1 py-4" :disabled="saving">
           {{ saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Add Vehicle') }}
@@ -312,7 +305,6 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { getCar, createCar, updateCar } from '../../api'
-import api from '../../api'
 import { API_BASE_URL } from '../../config'
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../../config'
 import { BrowserMultiFormatReader } from '@zxing/browser'
@@ -345,7 +337,6 @@ const form = ref({
   description: '', images: [],
 })
 const featuresText    = ref('')
-const debugInfo       = ref('')
 const fetchingCar     = ref(false)
 const saving          = ref(false)
 const uploading       = ref(false)
@@ -596,16 +587,6 @@ function removeImage(idx) {
   }
 }
 
-async function runAuthCheck() {
-  debugInfo.value = 'Checking...'
-  try {
-    const res = await api.get('/api/admin/check-auth')
-    debugInfo.value = 'Auth check result: ' + JSON.stringify(res.data)
-  } catch (err) {
-    debugInfo.value = 'Auth check failed: ' + (err.response?.status || err.message) + ' ' + JSON.stringify(err.response?.data || '')
-  }
-}
-
 function isTokenValid() {
   const token = localStorage.getItem('admin_token')
   if (!token) return false
@@ -692,11 +673,7 @@ async function save() {
           form: form.value, featuresText: featuresText.value, savedAt: Date.now(),
         }))
       }
-      // Diagnostic info so we can figure out why the backend rejected the request
-      const token = localStorage.getItem('admin_token')
-      const tokenInfo = token ? `token: yes (${token.length} chars, starts: ${token.substring(0, 20)}…)` : 'token: MISSING'
-      const reqHeaders = err.config?.headers?.Authorization ? 'auth header: sent' : 'auth header: NOT SENT'
-      saveError.value = `Server rejected the request (${status}). Your draft has been saved. Please screenshot this and send to Step. [DEBUG: ${tokenInfo}, ${reqHeaders}]`
+      saveError.value = 'Save failed — please log out, log back in, and try again. Your draft has been saved.'
     } else if (status === 400) {
       saveError.value = `Validation error (400): ${backendMsg || 'one or more fields were rejected by the server. Check that all required fields are filled in.'}`
     } else if (status >= 500) {

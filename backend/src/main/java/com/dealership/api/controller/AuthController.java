@@ -51,29 +51,6 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("token", token, "role", "ADMIN"));
     }
 
-    /** Debug: check if the current token is valid. Returns auth status. */
-    @GetMapping("/check-auth")
-    public ResponseEntity<?> checkAuth(jakarta.servlet.http.HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null) {
-            return ResponseEntity.ok(Map.of("authenticated", false, "reason", "No Authorization header"));
-        }
-        if (!authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.ok(Map.of("authenticated", false, "reason", "Header doesn't start with Bearer",
-                "header", authHeader.substring(0, Math.min(authHeader.length(), 30))));
-        }
-        String token = authHeader.substring(7);
-        boolean valid = jwtTokenProvider.validateToken(token);
-        if (!valid) {
-            return ResponseEntity.ok(Map.of("authenticated", false, "reason", "Token failed validation",
-                "tokenLength", token.length(), "tokenStart", token.substring(0, Math.min(token.length(), 30))));
-        }
-        String username = jwtTokenProvider.getUsername(token);
-        String role = jwtTokenProvider.getRole(token);
-        return ResponseEntity.ok(Map.of("authenticated", true, "username", username, "role", role,
-            "tokenLength", token.length()));
-    }
-
     /** Admin changes their own password. Requires current password to verify. */
     @PostMapping("/change-password")
     @PreAuthorize("hasRole('ADMIN')")
