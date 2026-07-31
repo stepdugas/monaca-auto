@@ -2,6 +2,7 @@ package com.dealership.api.controller;
 
 import com.dealership.api.dto.CarFilterRequest;
 import com.dealership.api.model.Car;
+import com.dealership.api.security.JwtTokenProvider;
 import com.dealership.api.service.CarService;
 import com.dealership.api.service.ValuationService;
 import jakarta.validation.Valid;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * REST controller for vehicle inventory.
@@ -23,10 +26,12 @@ public class InventoryController {
 
     private final CarService carService;
     private final ValuationService valuationService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public InventoryController(CarService carService, ValuationService valuationService) {
+    public InventoryController(CarService carService, ValuationService valuationService, JwtTokenProvider jwtTokenProvider) {
         this.carService = carService;
         this.valuationService = valuationService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     // ── Public endpoints ─────────────────────────────────────────────
@@ -90,5 +95,44 @@ public class InventoryController {
     public ResponseEntity<Car> refreshKBBValuation(@PathVariable Long id) {
         Car updatedCar = valuationService.refreshKBBValuation(id);
         return ResponseEntity.ok(updatedCar);
+    }
+
+    // ── Public endpoints with manual auth (bypasses Spring Security filters) ──
+
+    /** Validate token from request param, return error response if invalid. */
+    private ResponseEntity<?> validateAdminToken(String token) {
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No token provided"));
+        }
+        if (!jwtTokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid or expired token"));
+        }
+        String role = jwtTokenProvider.getRole(token);
+        if (!"ADMIN".equals(role) && !"MANAGER".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Insufficient role: " + role));
+        }
+        return null; // token is valid
+    }
+
+    @PostMapping("/admin-create")
+    public ResponseEntity<?> adminCreateCar(@RequestParam String token, @Valid @RequestBody Car car) {
+        ResponseEntity<?> authError = validateAdminToken(token);
+        if (authError != null) return authError;
+        return ResponseEntity.status(HttpStatus.CREATED).body(carService.create(car));
+    }
+
+    @PutMapping("/admin-update/{id}")
+    public ResponseEntity<?> adminUpdateCar(@PathVariable Long id, @RequestParam String token, @Valid @RequestBody Car car) {
+        ResponseEntity<?> authError = validateAdminToken(token);
+        if (authError != null) return authError;
+        return ResponseEntity.ok(carService.update(id, car));
+    }
+
+    @DeleteMapping("/admin-delete/{id}")
+    public ResponseEntity<?> adminDeleteCar(@PathVariable Long id, @RequestParam String token) {
+        ResponseEntity<?> authError = validateAdminToken(token);
+        if (authError != null) return authError;
+        carService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

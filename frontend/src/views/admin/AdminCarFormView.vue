@@ -599,35 +599,19 @@ async function save() {
     const payload = { ...form.value, features }
 
     const token = localStorage.getItem('admin_token')
-    if (isEdit.value) {
-      const res = await fetch(`${API_BASE_URL}/api/inventory/${route.params.id}?token=${encodeURIComponent(token)}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) {
-        const text = await res.text().catch(() => '')
-        throw { response: { status: res.status, data: text } }
-      }
-    } else {
-      // Send token both in header AND query param — guarantees it reaches the backend
-      const res = await fetch(`${API_BASE_URL}/api/inventory?token=${encodeURIComponent(token)}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) {
-        const text = await res.text().catch(() => '')
-        throw { response: { status: res.status, data: text } }
-      }
-      localStorage.removeItem(DRAFT_KEY)
+    const url = isEdit.value
+      ? `${API_BASE_URL}/api/inventory/admin-update/${route.params.id}?token=${encodeURIComponent(token)}`
+      : `${API_BASE_URL}/api/inventory/admin-create?token=${encodeURIComponent(token)}`
+    const res = await fetch(url, {
+      method: isEdit.value ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      throw { response: { status: res.status, data: text } }
     }
+    if (!isEdit.value) localStorage.removeItem(DRAFT_KEY)
     router.push({ name: 'AdminCars' })
   } catch (err) {
     const status  = err.response?.status

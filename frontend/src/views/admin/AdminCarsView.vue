@@ -192,9 +192,8 @@ async function doDelete() {
   deleting.value = true
   try {
     const token = localStorage.getItem('admin_token')
-    const res = await fetch(`${API_BASE_URL}/api/inventory/${deleteTarget.value.id}?token=${encodeURIComponent(token)}`, {
+    const res = await fetch(`${API_BASE_URL}/api/inventory/admin-delete/${deleteTarget.value.id}?token=${encodeURIComponent(token)}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` },
     })
     if (!res.ok) throw new Error(`Delete failed: ${res.status}`)
     cars.value = cars.value.filter(c => c.id !== deleteTarget.value.id)

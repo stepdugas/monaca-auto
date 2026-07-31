@@ -309,9 +309,9 @@ async function saveCar() {
       .filter((f) => f)
 
     const token = localStorage.getItem('admin_token')
-    const res = await fetch(`${API_BASE_URL}/api/inventory/${props.car.id}?token=${encodeURIComponent(token)}`, {
+    const res = await fetch(`${API_BASE_URL}/api/inventory/admin-update/${props.car.id}?token=${encodeURIComponent(token)}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData.value),
     })
     if (!res.ok) {
