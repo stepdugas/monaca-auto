@@ -66,6 +66,7 @@ public class SecurityConfig {
                 // Email test endpoint — requires authentication to prevent open relay
                 .requestMatchers(HttpMethod.POST, "/api/email/test").authenticated()
                 // Admin inventory operations with manual token auth
+                .requestMatchers("/api/cars").permitAll()
                 .requestMatchers("/api/cars/**").permitAll()
                 // Actuator health endpoint (used by keep-alive ping)
                 .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
