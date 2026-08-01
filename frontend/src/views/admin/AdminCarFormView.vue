@@ -600,8 +600,8 @@ async function save() {
 
     const token = localStorage.getItem('admin_token')
     const url = isEdit.value
-      ? `${API_BASE_URL}/api/inventory/admin-update/${route.params.id}?token=${encodeURIComponent(token)}`
-      : `${API_BASE_URL}/api/inventory/admin-create?token=${encodeURIComponent(token)}`
+      ? `${API_BASE_URL}/api/cars/${route.params.id}?token=${encodeURIComponent(token)}`
+      : `${API_BASE_URL}/api/cars?token=${encodeURIComponent(token)}`
     const res = await fetch(url, {
       method: isEdit.value ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -192,7 +192,7 @@ async function doDelete() {
   deleting.value = true
   try {
     const token = localStorage.getItem('admin_token')
-    const res = await fetch(`${API_BASE_URL}/api/inventory/admin-delete/${deleteTarget.value.id}?token=${encodeURIComponent(token)}`, {
+    const res = await fetch(`${API_BASE_URL}/api/cars/${deleteTarget.value.id}?token=${encodeURIComponent(token)}`, {
       method: 'DELETE',
     })
     if (!res.ok) throw new Error(`Delete failed: ${res.status}`)

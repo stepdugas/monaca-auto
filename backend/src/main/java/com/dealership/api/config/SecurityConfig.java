@@ -65,10 +65,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/schedule-service").permitAll()
                 // Email test endpoint — requires authentication to prevent open relay
                 .requestMatchers(HttpMethod.POST, "/api/email/test").authenticated()
-                // Admin inventory operations with manual token auth (bypasses Spring Security)
-                .requestMatchers(HttpMethod.POST, "/api/inventory/admin-create").permitAll()
-                .requestMatchers(HttpMethod.PUT, "/api/inventory/admin-update/**").permitAll()
-                .requestMatchers(HttpMethod.DELETE, "/api/inventory/admin-delete/**").permitAll()
+                // Admin inventory operations with manual token auth
+                .requestMatchers("/api/cars/**").permitAll()
                 // Actuator health endpoint (used by keep-alive ping)
                 .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                 // Admin dashboard stats
