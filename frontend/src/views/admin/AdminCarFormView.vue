@@ -596,7 +596,12 @@ async function save() {
       .map(s => s.trim())
       .filter(Boolean)
 
+    // Coerce empty strings to null. Jackson can't deserialize "" into Integer/BigDecimal,
+    // and an empty VIN violates the UNIQUE index (Postgres allows multiple NULLs but only one '').
     const payload = { ...form.value, features }
+    for (const k of Object.keys(payload)) {
+      if (payload[k] === '') payload[k] = null
+    }
 
     const token = localStorage.getItem('admin_token')
     const url = isEdit.value
@@ -623,14 +628,23 @@ async function save() {
       saveError.value = isTimeout
         ? `Request timed out. The Render backend may be cold-starting. Wait 30 seconds and try again. If this keeps happening, check the Render dashboard.`
         : `Could not reach the server (${err.message}). Check your internet connection and verify the Render backend is running at https://monaca-auto-sales.onrender.com/actuator/health`
-    } else if (status === 401 || status === 403) {
-      // Save draft so the user doesn't lose their work
+    } else if (status === 401) {
       if (!isEdit.value) {
         localStorage.setItem(DRAFT_KEY, JSON.stringify({
           form: form.value, featuresText: featuresText.value, savedAt: Date.now(),
         }))
       }
-      saveError.value = 'Save failed — please log out, log back in, and try again. Your draft has been saved.'
+      saveError.value = 'Your session expired. Please log out, log back in, and try again. Your draft has been saved.'
+    } else if (status === 403) {
+      // 403 usually means the backend rejected the payload during deserialization
+      // (empty string in a numeric field, duplicate VIN, etc.) and dispatched to /error.
+      // Save draft so nothing's lost, then surface a payload-focused message.
+      if (!isEdit.value) {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          form: form.value, featuresText: featuresText.value, savedAt: Date.now(),
+        }))
+      }
+      saveError.value = `Save rejected by the server${backendMsg ? ': ' + backendMsg : ''}. Common causes: the VIN is already used by another vehicle, or a numeric field has an unexpected value. Your draft is saved.`
     } else if (status === 400) {
       saveError.value = `Validation error (400): ${backendMsg || 'one or more fields were rejected by the server. Check that all required fields are filled in.'}`
     } else if (status >= 500) {
